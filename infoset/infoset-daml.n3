@@ -1,0 +1,337 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+
+<> dc:title "An RDF/DAML+OIL Schema/Ontology for the XML infoset";
+ dc:source <http://www.w3.org/TR/2001/WD-xml-infoset-20010316/>;
+ dc:description """I (DanC) am going over the spec again,
+ transcribing it to DAML+OIL. So far, I've done
+ all the Document properties, and it's going great!
+ I've transcribed the sense of the spec using DAML+OIL plus
+ just one horn-clause rule.""".
+
+@prefix dpo:  <http://www.daml.org/2001/03/daml+oil#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix : <http://www.w3.org/2001/05id/infoset#> . #@@ move this there.
+@prefix w: <w3c-webmaster@@#>.
+
+<> w:nspolicy
+"""
+This RDF schema's namespace name
+
+ http://www.w3.org/2001/04/infoset#
+
+ will only be used to describe the infoitems and properties defined in
+ the corresponding version of the XML Infoset specification, which is
+
+  http://www.w3.org/TR/2001/WD-xml-infoset-20010316
+
+ Any new version of the specification that changes the infoitems or
+ properties will have a new RDF schema with a different namespace
+ name.
+
+ This RDF schema for the XML Infoset is not a normative part of the 
+ XML Infoset Specification.  If this schema is found not to match
+ the normative text of the specification, it will be corrected without
+ changing the namespace name.
+""".
+
+@prefix iu: <infosetUtil#>.
+@prefix dl: <mid:damlList#>. #@@
+
+
+:Document iu:itemName "Document";
+  rdfs:comment "2.1. The Document Information Item";
+  rdfs:subClassOf [
+    dpo:onProperty :children;
+    dpo:toClass iu:DocChildren;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :documentElement;
+    dpo:toClass :Element;
+    ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :notations;
+    dpo:toClass [ iu:setOf :Notation ]
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :unparsedEntities;
+    dpo:toClass [ iu:setOf :UnparsedEntity ]
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :baseURI;
+    dpo:toClass iu:AbsoluteURI;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :systemIdentifier;
+    dpo:toClass iu:AbsoluteURI;
+  ];
+
+  #@@REVIEW: this should be a property of a parsed entity,
+  # not a property of a document.
+  rdfs:subClassOf [
+    dpo:onProperty :characterEncodingScheme;
+    dpo:toClass iu:EncName
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :standalone;
+    dpo:toClass iu:StandAloneType;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :version;
+    dpo:toClass :Version;
+  ].
+
+iu:DocChildren rdfs:label "Doc Items...";
+  iu:listOf [
+    dpo:disjointUnionOf (
+      :Element # exactly one; see rule below
+      :ProcessingInstruction
+      :Comment
+      :DocumentTypeDeclaration # at most one@@
+    ) ].
+
+:Version rdfs:label "Version";
+  dpo:disjointUnionOf (iu:NoValue iu:VersionNum).
+
+:children iu:propertyName "children".
+
+:documentElement iu:propertyName "document element".
+
+:notations iu:propertyName "notations".
+
+:unparsedEntities iu:propertyName "unparsed entities".
+
+:baseURI iu:propertyName "base URI".
+
+:systemIdentifier iu:propertyName "system identifier".
+
+:characterEncodingScheme iu:propertyName "character encoding scheme".
+
+:standalone iu:propertyName "standalone".
+:yes rdfs:label "yes".
+:no rdfs:label "no".
+:noValue rdfs:label "no value".
+
+:version iu:propertyName "version".
+
+:Element     iu:itemName "Element";
+  rdfs:subClassOf [
+    dpo:onProperty :namespaceName;
+    dpo:toClass iu:NamespaceName;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :localName;
+    dpo:toClass iu:NCName;
+  ];
+    
+  rdfs:subClassOf [
+    dpo:onProperty :prefix;
+    dpo:toClass iu:Prefix;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :children;
+    dpo:toClass iu:Content;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :attributes;
+    dpo:toClass [ iu:setOf :Attribute ];
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :namespaceAttributes;
+    dpo:toClass [ iu:setOf :Attribute ];
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :inScopeNamespaces;
+    dpo:toClass [ iu:setOf :Namespace ];
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :baseURI;
+    dpo:toClass iu:AbsoluteURI;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :parent;
+    dpo:toClass [ rdfs:label "Elt/Doc";
+		dpo:disjointUnionOf ( :Element :Document ) ];
+  ];
+  .
+
+:namespaceName iu:propertyName "namespace name".
+iu:NamespaceName rdfs:label "Namespace Name";
+  dpo:disjointUnionOf (
+    iu:NoValue #@@REVIEW: hmm... the "" URIreference
+    iu:AbsoluteURI
+  ).
+
+:localName iu:propertyName "local name".
+
+:prefix iu:propertyName "prefix".
+
+iu:Content rdfs:label "Content";
+  iu:listOf [
+    dpo:disjointUnionOf (
+      :Element
+      :ProcessingInstruction
+      # unexpanded entity reference is not part of the actual model.
+      :Character
+      :Comment
+      ) ].
+
+:attributes iu:propertyName "attributes".
+:namespaceAttributes iu:propertyName "namespace attributes".
+
+:inScopeNamespaces iu:propertyName "in-scope namespaces";
+  rdfs:comment """@@not captured:
+"This set always
+             contains an item with the prefix xml which is implicitly bound to the namespace
+             name http://www.w3.org/XML/1998/namespace."
+""".
+
+:parent iu:propertyName "parent".
+
+:Attribute iu:itemName "Attribute";
+  rdfs:subClassOf [
+    dpo:onProperty :namespaceName;
+    dpo:toClass iu:NamespaceName;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :localName;
+    dpo:toClass iu:NCName;
+  ];
+    
+  rdfs:subClassOf [
+    dpo:onProperty :prefix;
+    dpo:toClass iu:Prefix;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :normalizedValue;
+    dpo:toClass iu:String;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :specified;
+    dpo:toClass iu:Boolean;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :attributeType;
+    dpo:toClass iu:AttributeType;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :ownerElement;
+    dpo:toClass :Element;
+  ];
+  .
+
+:normalizedValue iu:propertyName "normalized value".
+
+:specified iu:propertyName "specified".
+
+:attributeType iu:propertyName "attribute type".
+
+iu:AttributeType rdfs:label "Attribute Type";
+  <dpo_oneOf> ( # @@elide this... too slow
+    :noValue
+    :ID
+    :IDREF
+    :IDREFS
+    :ENTITY
+    :ENTITIES
+    :NMTOKEN
+    :NMTOKENS
+    :NOTATION
+    :CDATA
+    :ENUMERATION
+    ).
+
+:ID rdfs:label "ID".
+:IDREF rdfs:label "IDREF".
+:IDREFS rdfs:label "IDREFS".
+:ENTITY rdfs:label "ENTITY".
+:ENTITIES rdfs:label "ENTITIES".
+:NMTOKEN rdfs:label "NMTOKEN".
+:NMTOKENS rdfs:label "NMTOKENS".
+:NOTATION rdfs:label "NOTATION".
+:CDATA rdfs:label "CDATA".
+:ENUMERATION rdfs:label "ENUMERATION".
+
+:ownerElement iu:propertyName "owner element".
+
+:ProcessingInstruction iu:itemName "Processing Instruction";
+  rdfs:subClassOf [
+    dpo:onProperty :target;
+    dpo:toClass iu:Name;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :content;
+    dpo:toClass iu:String;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :baseURI;
+    dpo:toClass iu:AbsoluteURI;
+  ];
+
+  rdfs:subClassOf [
+    dpo:onProperty :parent;
+    dpo:toClass [  rdfs:label "Elt/Doc/DTD";
+		dpo:disjointUnionOf 
+                   ( :Element :Document :DocumentTypeDeclaration ) ];
+  ];
+  .
+
+:target iu:propertyName "target".
+:content iu:propertyName "content".
+
+:Namespace iu:itemName "Namespace";
+  rdfs:comment "@@more...".
+
+:Character iu:itemName "Character";
+  rdfs:comment "@@more...".
+
+
+:Comment     iu:itemName "Comment";
+  rdfs:comment "@@more...".
+
+:DocumentTypeDeclaration iu:itemName "Document Type Declaration";
+  rdfs:comment "@@more...".
+
+:Notation iu:itemName "Notation";
+  rdfs:comment "@@more...".
+
+:UnparsedEntity iu:itemName "Unparsed Entity";
+  rdfs:comment "@@more...".
+
+:allDeclarationsProcessed iu:propertyName "all declarations processed";
+  rdfs:range iu:Boolean.
+  
+
+
+### supplemental rules
+@prefix log: <http://www.w3.org/2000/10/swap/log.n3#>.
+
+# REVIEW: this is left implicit in the infoset spec.
+{ :d a :Document;
+     :children [ dl:member :e ].
+  :e a :Element
+} log:means { :d :documentElement :e. }.
+
+{ :s :parent :o } log:means { :o :children [ dl:member :s ] }.
+
